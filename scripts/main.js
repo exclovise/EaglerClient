@@ -1,41 +1,31 @@
-// scripts/main.js
-window.onload = function () {
-  console.log("ExcloMC Eaglercraft Client starting...");
+import { showLogin, showConnecting, showGameScreen, showError } from './ui.js';
+import { EaglerWebSocketClient } from './websocket.js';
 
-  // Load config
-  fetch('config/client-config.json')
-    .then(res => res.json())
-    .then(config => {
-      initializeClient(config);
-    })
-    .catch(err => console.error('Failed to load config', err));
-};
+let client = null;
 
-function initializeClient(config) {
-  // Setup game canvas, event handlers, UI, etc.
-  console.log("Client config loaded:", config);
-
-  // Example: Load server list and show UI
-  fetch('config/servers.json')
-    .then(res => res.json())
-    .then(servers => {
-      setupServerList(servers);
-    });
-}
-
-function setupServerList(servers) {
-  // Create UI elements for server list
-  const container = document.getElementById('game-container');
-  container.innerHTML = '<h2>Select a Server</h2>';
-  servers.forEach(server => {
-    let btn = document.createElement('button');
-    btn.textContent = `${server.name} - ${server.address}`;
-    btn.onclick = () => connectToServer(server.address);
-    container.appendChild(btn);
+function start() {
+  showLogin(async (username, serverAddress) => {
+    showConnecting(serverAddress);
+    client = new EaglerWebSocketClient(serverAddress, username);
+    
+    try {
+      await client.connect();
+      showGameScreen();
+    } catch (err) {
+      console.error(err);
+      showError('Failed to connect. Please try again.');
+    }
   });
+  
+  window.onDisconnect = () => {
+    client.disconnect();
+    client = null;
+    start();
+  };
+  
+  window.onRetry = () => {
+    start();
+  };
 }
 
-function connectToServer(address) {
-  alert(`Connecting to ${address}...`);
-  // Real connection logic here (WebSocket)
-}
+window.onload = start;
