@@ -1,0 +1,10 @@
+[
+  {
+    "name": "ExcloMC Official",
+    "address": "wss://play.exclomc.com"
+  },
+  {
+    "name": "Localhost Test",
+    "address": "ws://localhost:8080"
+  }
+]
